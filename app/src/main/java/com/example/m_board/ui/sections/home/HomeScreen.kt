@@ -17,8 +17,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -50,6 +50,40 @@ object HomeScreen {
     ) {
         Scaffold(
             modifier = modifier,
+            topBar = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(
+                        space = 16.dp,
+                        alignment = Alignment.Start
+                    ),
+                    verticalAlignment = Alignment.CenterVertically,
+                    content = {
+                        Box(
+                            modifier = Modifier
+                                .setSizeLimitation()
+                                .clip(shape = CircleShape)
+                                .background(color = MaterialTheme.colorScheme.primaryContainer)
+                                .clickable(onClick = { TODO() }),
+                            contentAlignment = Alignment.Center,
+                            content = {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                                    contentDescription = null
+                                )
+                            }
+                        )
+                        Text(
+                            text = "Message Board",
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 18.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                )
+            },
             content = { paddingValues ->
                 val screenState = homeViewModel.screenState.collectAsState()
                 val context = LocalContext.current
@@ -177,11 +211,7 @@ object HomeScreen {
                                         disabledIndicatorColor = Color.Transparent,
                                         errorIndicatorColor = Color.Transparent
                                     ),
-//                                    textStyle = TextStyle(
-//                                        fontSize = 16.sp,
-//                                        fontWeight = FontWeight.Medium,
-//                                        color = MaterialTheme.colorScheme.onSurface
-//                                    ),
+                                    placeholder = { Text("Type your message...") },
                                     value = text,
                                     onValueChange = { txt -> homeViewModel.message.value = txt },
                                     enabled = !screenState.value.isLoading
