@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
+import com.example.m_board.BuildConfig
 import com.example.m_board.R
 import com.example.m_board.util.CustomSharedValues.setSizeLimitation
 import com.example.m_board.util.ScreenState
@@ -94,7 +95,7 @@ object LoginScreen {
                                     enabled = !screenState.value.isLoading,
                                     onClick = {
                                         val googleIdOption = GetGoogleIdOption.Builder()
-                                            .setServerClientId("426664497402-65qgep1ufh52va3aqt5ighd94tkireb9.apps.googleusercontent.com") // TODO: local.prop?
+                                            .setServerClientId(BuildConfig.SERVER_CLIENT_ID) // TODO: local.prop?
                                             .setFilterByAuthorizedAccounts(
                                                 filterByAuthorizedAccounts = false
                                             )

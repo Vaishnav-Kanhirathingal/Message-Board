@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -18,6 +20,14 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val propertiesFle = Properties()
+            .apply { load(rootProject.file("local.properties").inputStream()) }
+        buildConfigField(
+            type = String::class.simpleName!!,
+            name = "SERVER_CLIENT_ID",
+            value = propertiesFle.getProperty("SERVER_CLIENT_ID")
+        )
     }
 
     buildTypes {
@@ -37,6 +47,7 @@ android {
         jvmTarget = "11"
     }
     buildFeatures {
+        buildConfig = true
         compose = true
     }
 }
