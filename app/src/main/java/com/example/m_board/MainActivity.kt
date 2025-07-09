@@ -13,12 +13,14 @@ import androidx.navigation.compose.rememberNavController
 import com.example.m_board.ui.sections.home.HomeScreen
 import com.example.m_board.ui.sections.login.LoginScreen
 import com.example.m_board.ui.theme.MBoardTheme
+import com.google.firebase.FirebaseApp
 import kotlinx.serialization.Serializable
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        FirebaseApp.initializeApp(this)
         setContent { MBoardTheme { NavHost(modifier = Modifier.fillMaxSize()) } }
     }
 

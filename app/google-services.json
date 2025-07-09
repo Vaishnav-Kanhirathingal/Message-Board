@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "426664497402",
+    "firebase_url": "https://message-board-cd3dc-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "message-board-cd3dc",
     "storage_bucket": "message-board-cd3dc.firebasestorage.app"
   },
@@ -12,7 +13,20 @@
           "package_name": "com.example.m_board"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "426664497402-h87bvcsbqta793gvlrpaf2mr6beh227s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.m_board",
+            "certificate_hash": "532b24961ddb9875a4398b03265fb255ebb78f05"
+          }
+        },
+        {
+          "client_id": "426664497402-65qgep1ufh52va3aqt5ighd94tkireb9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBs1STXoV2DiHJVdww1AFD8sNpetu9PV2s"
@@ -20,7 +34,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "426664497402-65qgep1ufh52va3aqt5ighd94tkireb9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
