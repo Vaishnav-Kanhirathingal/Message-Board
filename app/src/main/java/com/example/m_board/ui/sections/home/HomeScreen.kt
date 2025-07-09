@@ -8,7 +8,7 @@ object HomeScreen {
     @Composable
     fun Screen(
         modifier: Modifier,
-        loginViewModel: LoginViewModel
+        homeViewModel: HomeViewModel
     ) {
         TODO()
     }

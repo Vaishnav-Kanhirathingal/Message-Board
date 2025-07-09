@@ -5,43 +5,57 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.m_board.ui.sections.home.HomeScreen
+import com.example.m_board.ui.sections.login.LoginScreen
 import com.example.m_board.ui.theme.MBoardTheme
+import kotlinx.serialization.Serializable
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent {
-            MBoardTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+        setContent { MBoardTheme { NavHost(modifier = Modifier.fillMaxSize()) } }
+    }
+
+    @Composable
+    fun NavHost(modifier: Modifier) {
+        val navController = rememberNavController()
+        androidx.navigation.compose.NavHost(
+            modifier = modifier,
+            navController = navController,
+            startDestination = Destinations.Login,
+            builder = {
+                val screenModifier = Modifier.fillMaxSize()
+                composable<Destinations.Login>(
+                    content = {
+                        LoginScreen.Screen(
+                            modifier = screenModifier,
+                            loginViewModel = viewModel(viewModelStoreOwner = it)
+                        )
+                    }
+                )
+                composable<Destinations.Home>(
+                    content = {
+                        HomeScreen.Screen(
+                            modifier = screenModifier,
+                            homeViewModel = viewModel(viewModelStoreOwner = it)
+                        )
+                    }
+                )
             }
-        }
+        )
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+sealed class Destinations {
+    @Serializable
+    data object Login : Destinations()
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MBoardTheme {
-        Greeting("Android")
-    }
+    @Serializable
+    data object Home : Destinations()
 }
