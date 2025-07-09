@@ -2,11 +2,15 @@ package com.example.m_board.ui.sections.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,20 +18,24 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.m_board.util.CustomSharedValues.setSizeLimitation
+import com.example.m_board.util.ScreenState
 import com.google.firebase.auth.FirebaseAuth
 
 object HomeScreen {
@@ -40,6 +48,18 @@ object HomeScreen {
             modifier = modifier,
             content = { paddingValues ->
                 val screenState = homeViewModel.screenState.collectAsState()
+                val context = LocalContext.current
+                LaunchedEffect(
+                    key1 = screenState.value,
+                    block = {
+                        val ss = screenState.value
+                        when (ss) {
+                            is ScreenState.PreCall, is ScreenState.Loading, is ScreenState.Loaded -> {}
+                            is ScreenState.ApiError -> ss.manageToastActions(context = context)
+                        }
+                    }
+                )
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -61,52 +81,60 @@ object HomeScreen {
                                     itemContent = {
                                         val isUsersText =
                                             ((it.userId == userId) && (userId != null))
-                                        Column(
-                                            modifier = Modifier
-                                                .widthIn(min = 250.dp)
-                                                .padding(
-                                                    start = if (isUsersText) 64.dp else 16.dp,
-                                                    end = if (isUsersText) 16.dp else 64.dp
-                                                )
-                                                .background(
-                                                    color =
-                                                        if (isUsersText) MaterialTheme.colorScheme.primaryContainer
-                                                        else MaterialTheme.colorScheme.surfaceContainer,
-                                                    shape = RoundedCornerShape(size = 16.dp)
-                                                )
-                                                .padding(
-                                                    start = 16.dp,
-                                                    end = 16.dp,
-                                                    top = 12.dp,
-                                                    bottom = 8.dp
-                                                ),
+                                        Box(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            contentAlignment = if (isUsersText) Alignment.CenterEnd else Alignment.CenterStart,
                                             content = {
-                                                val textColor =
-                                                    if (isUsersText) MaterialTheme.colorScheme.onPrimaryContainer
-                                                    else MaterialTheme.colorScheme.onSurface
-
-                                                Text(
-                                                    modifier = Modifier.align(alignment = Alignment.Start),
-                                                    text = it.userName ?: "[Unnamed User]",
-                                                    fontWeight = FontWeight.SemiBold,
-                                                    fontSize = 12.sp,
-                                                    lineHeight = 12.sp,
-                                                    color = textColor
-                                                )
-                                                Text(
-                                                    text = it.message,
-                                                    fontWeight = FontWeight.Medium,
-                                                    fontSize = 18.sp,
-                                                    lineHeight = 18.sp,
-                                                    color = textColor
-                                                )
-                                                Text(
-                                                    modifier = Modifier.align(alignment = Alignment.End),
-                                                    text = it.time.toHourMinute(),
-                                                    fontWeight = FontWeight.Medium,
-                                                    fontSize = 12.sp,
-                                                    lineHeight = 12.sp,
-                                                    color = textColor
+                                                Column(
+                                                    modifier = Modifier
+                                                        .widthIn(min = 250.dp)
+                                                        .padding(
+                                                            start = if (isUsersText) 64.dp else 16.dp,
+                                                            end = if (isUsersText) 16.dp else 64.dp
+                                                        )
+                                                        .background(
+                                                            color =
+                                                                if (isUsersText) MaterialTheme.colorScheme.primaryContainer
+                                                                else MaterialTheme.colorScheme.surfaceContainer,
+                                                            shape = RoundedCornerShape(size = 16.dp)
+                                                        )
+                                                        .padding(
+                                                            start = 16.dp,
+                                                            end = 16.dp,
+                                                            top = 12.dp,
+                                                            bottom = 8.dp
+                                                        ),
+                                                    content = {
+                                                        val textColor =
+                                                            if (isUsersText) MaterialTheme.colorScheme.onPrimaryContainer
+                                                            else MaterialTheme.colorScheme.onSurface
+                                                        if (!isUsersText) {
+                                                            Text(
+                                                                modifier = Modifier.align(alignment = Alignment.Start),
+                                                                text = it.userName
+                                                                    ?: "[Unnamed User]",
+                                                                fontWeight = FontWeight.SemiBold,
+                                                                fontSize = 12.sp,
+                                                                lineHeight = 12.sp,
+                                                                color = textColor
+                                                            )
+                                                        }
+                                                        Text(
+                                                            text = it.message,
+                                                            fontWeight = FontWeight.Medium,
+                                                            fontSize = 18.sp,
+                                                            lineHeight = 18.sp,
+                                                            color = textColor
+                                                        )
+                                                        Text(
+                                                            modifier = Modifier.align(alignment = Alignment.End),
+                                                            text = it.time.toHourMinute(),
+                                                            fontWeight = FontWeight.Medium,
+                                                            fontSize = 12.sp,
+                                                            lineHeight = 12.sp,
+                                                            color = textColor
+                                                        )
+                                                    }
                                                 )
                                             }
                                         )
@@ -118,6 +146,7 @@ object HomeScreen {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .imePadding()
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                                 .background(
                                     color = MaterialTheme.colorScheme.surfaceContainer,
@@ -146,10 +175,19 @@ object HomeScreen {
                                             ?.let { homeViewModel.sendMessage(message = it) }
                                     },
                                     content = {
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Filled.Send,
-                                            contentDescription = null
-                                        )
+                                        if (screenState.value.isLoading) {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.size(size = 24.dp),
+                                                strokeWidth = 2.dp,
+                                                color = MaterialTheme.colorScheme.onSurface
+
+                                            )
+                                        } else {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Filled.Send,
+                                                contentDescription = null
+                                            )
+                                        }
                                     }
                                 )
                             }

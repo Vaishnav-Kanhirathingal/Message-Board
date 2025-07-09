@@ -41,11 +41,12 @@ class HomeViewModel : ViewModel() {
             try {
                 Log.d(TAG, "api call starting")
 
+                val user = FirebaseAuth.getInstance().currentUser
                 val msg = Message(
                     time = System.currentTimeMillis(),
                     message = message,
-                    userName = null,
-                    userId = FirebaseAuth.getInstance().currentUser?.uid
+                    userName = user?.displayName,
+                    userId = user?.uid
                 )
                 Firebase
                     .database
@@ -54,6 +55,7 @@ class HomeViewModel : ViewModel() {
                     .child(Random.nextInt().toString())
                     .setValue(msg.toMap())
                     .await()
+                this@HomeViewModel.message.value = ""
                 ScreenState.Loaded(result = Unit)
             } catch (e: Exception) {
                 e.printStackTrace()
