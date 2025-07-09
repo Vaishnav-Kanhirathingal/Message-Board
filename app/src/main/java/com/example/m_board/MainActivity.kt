@@ -11,6 +11,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.m_board.ui.sections.home.HomeScreen
+import com.example.m_board.ui.sections.loader.LoaderScreen
 import com.example.m_board.ui.sections.login.LoginScreen
 import com.example.m_board.ui.theme.MBoardTheme
 import com.google.firebase.FirebaseApp
@@ -30,9 +31,40 @@ class MainActivity : ComponentActivity() {
         androidx.navigation.compose.NavHost(
             modifier = modifier,
             navController = navController,
-            startDestination = Destinations.Login,
+            startDestination = Destinations.Loader,
             builder = {
                 val screenModifier = Modifier.fillMaxSize()
+                composable<Destinations.Loader>(
+                    content = {
+                        LoaderScreen.Screen(
+                            modifier = screenModifier,
+                            toLoginScreen = {
+                                navController.navigate(
+                                    route = Destinations.Login,
+                                    builder = {
+                                        this.popUpTo<Destinations.Loader>(
+                                            popUpToBuilder = {
+                                                this.inclusive = true
+                                            }
+                                        )
+                                    }
+                                )
+                            },
+                            toHomeScreen = {
+                                navController.navigate(
+                                    route = Destinations.Home,
+                                    builder = {
+                                        this.popUpTo<Destinations.Loader>(
+                                            popUpToBuilder = {
+                                                this.inclusive = true
+                                            }
+                                        )
+                                    }
+                                )
+                            }
+                        )
+                    }
+                )
                 composable<Destinations.Login>(
                     content = {
                         LoginScreen.Screen(
@@ -71,4 +103,7 @@ sealed class Destinations {
 
     @Serializable
     data object Home : Destinations()
+
+    @Serializable
+    data object Loader : Destinations()
 }
