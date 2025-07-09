@@ -71,13 +71,12 @@ class HomeViewModel : ViewModel() {
     fun liveListener() {
         Firebase.database
             .getReference(BOARD_PATH)
-            .orderByChild(Message::time.name)
             .addValueEventListener(
                 object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
-                        _messageList.value = snapshot.children.mapNotNull { child ->
-                            child.getValue(Message::class.java)
-                        }
+                        _messageList.value = snapshot.children
+                            .mapNotNull { child -> child.getValue(Message::class.java) }
+                            .sortedByDescending { it.time }
                     }
 
                     override fun onCancelled(error: DatabaseError) {

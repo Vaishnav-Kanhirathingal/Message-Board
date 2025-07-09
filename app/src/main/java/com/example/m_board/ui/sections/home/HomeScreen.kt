@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -105,10 +106,18 @@ object HomeScreen {
                     content = {
                         val list = homeViewModel.messageList.collectAsState().value
                         val userId = FirebaseAuth.getInstance().currentUser?.uid
+                        val listState = rememberLazyListState()
+                        LaunchedEffect(
+                            key1 = list.size,
+                            block = { listState.animateScrollToItem(0) }
+                        )
+
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(weight = 1f),
+                            state = listState,
+                            reverseLayout = true,
                             verticalArrangement = Arrangement.spacedBy(
                                 space = 4.dp,
                                 alignment = Alignment.Bottom
@@ -214,7 +223,7 @@ object HomeScreen {
                                     placeholder = { Text("Type your message...") },
                                     value = text,
                                     onValueChange = { txt -> homeViewModel.message.value = txt },
-                                    enabled = !screenState.value.isLoading
+//                                    enabled = !screenState.value.isLoading
                                 )
                                 IconButton(
                                     modifier = Modifier.setSizeLimitation(),
