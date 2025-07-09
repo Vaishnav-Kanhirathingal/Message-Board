@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.m_board.util.CustomSharedValues.setSizeLimitation
+import com.google.firebase.auth.FirebaseAuth
 
 object HomeScreen {
     @Composable
@@ -44,47 +46,67 @@ object HomeScreen {
                         .padding(paddingValues = paddingValues),
                     content = {
                         val list = homeViewModel.messageList.collectAsState().value
+                        val userId = FirebaseAuth.getInstance().currentUser?.uid
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(weight = 1f),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Bottom,
+                            verticalArrangement = Arrangement.spacedBy(
+                                space = 4.dp,
+                                alignment = Alignment.Bottom
+                            ),
                             content = {
                                 items(
                                     items = list,
                                     itemContent = {
+                                        val isUsersText =
+                                            ((it.userId == userId) && (userId != null))
                                         Column(
                                             modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(horizontal = 16.dp)
+                                                .widthIn(min = 250.dp)
+                                                .padding(
+                                                    start = if (isUsersText) 64.dp else 16.dp,
+                                                    end = if (isUsersText) 16.dp else 64.dp
+                                                )
                                                 .background(
-                                                    color = MaterialTheme.colorScheme.surfaceContainer,
+                                                    color =
+                                                        if (isUsersText) MaterialTheme.colorScheme.primaryContainer
+                                                        else MaterialTheme.colorScheme.surfaceContainer,
                                                     shape = RoundedCornerShape(size = 16.dp)
                                                 )
                                                 .padding(
-                                                    horizontal = 8.dp,
-                                                    vertical = 4.dp
+                                                    start = 16.dp,
+                                                    end = 16.dp,
+                                                    top = 12.dp,
+                                                    bottom = 8.dp
                                                 ),
                                             content = {
+                                                val textColor =
+                                                    if (isUsersText) MaterialTheme.colorScheme.onPrimaryContainer
+                                                    else MaterialTheme.colorScheme.onSurface
+
                                                 Text(
                                                     modifier = Modifier.align(alignment = Alignment.Start),
                                                     text = it.userName ?: "[Unnamed User]",
                                                     fontWeight = FontWeight.SemiBold,
                                                     fontSize = 12.sp,
-                                                    color = MaterialTheme.colorScheme.onSurface
+                                                    lineHeight = 12.sp,
+                                                    color = textColor
                                                 )
                                                 Text(
                                                     text = it.message,
                                                     fontWeight = FontWeight.Medium,
-                                                    fontSize = 16.sp,
-                                                    color = MaterialTheme.colorScheme.onSurface
+                                                    fontSize = 18.sp,
+                                                    lineHeight = 18.sp,
+                                                    color = textColor
                                                 )
                                                 Text(
+                                                    modifier = Modifier.align(alignment = Alignment.End),
                                                     text = it.time.toHourMinute(),
-                                                    fontWeight = FontWeight.SemiBold,
+                                                    fontWeight = FontWeight.Medium,
                                                     fontSize = 12.sp,
-                                                    color = MaterialTheme.colorScheme.onSurface
+                                                    lineHeight = 12.sp,
+                                                    color = textColor
                                                 )
                                             }
                                         )

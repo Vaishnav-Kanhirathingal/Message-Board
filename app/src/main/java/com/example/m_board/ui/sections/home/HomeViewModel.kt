@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.m_board.util.ScreenState
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -43,7 +44,8 @@ class HomeViewModel : ViewModel() {
                 val msg = Message(
                     time = System.currentTimeMillis(),
                     message = message,
-                    userName = null
+                    userName = null,
+                    userId = FirebaseAuth.getInstance().currentUser?.uid
                 )
                 Firebase
                     .database
@@ -88,13 +90,15 @@ class HomeViewModel : ViewModel() {
 data class Message(
     val time: Long = 0,
     val message: String = "",
-    val userName: String? = null
+    val userName: String? = null,
+    val userId: String? = null
 ) {
-    fun toMap(): Map<String, Any?> {
+    fun toMap(): Map<String, Any?> { // TODO: remove?
         return mapOf(
             this::time.name to this.time,
             this::message.name to this.message,
-            this::userName.name to this.userName
+            this::userName.name to this.userName,
+            this::userId.name to this.userId
         )
     }
 }
