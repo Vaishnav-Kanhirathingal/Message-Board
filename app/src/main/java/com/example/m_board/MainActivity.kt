@@ -35,7 +35,18 @@ class MainActivity : ComponentActivity() {
                     content = {
                         LoginScreen.Screen(
                             modifier = screenModifier,
-                            loginViewModel = viewModel(viewModelStoreOwner = it)
+                            loginViewModel = viewModel(viewModelStoreOwner = it),
+                            toHomeScreen = {
+                                navController.navigate(
+                                    route = Destinations.Home,
+                                    builder = {
+                                        this.popUpTo(
+                                            route = Destinations.Login,
+                                            popUpToBuilder = { this.inclusive = true }
+                                        )
+                                    }
+                                )
+                            }
                         )
                     }
                 )

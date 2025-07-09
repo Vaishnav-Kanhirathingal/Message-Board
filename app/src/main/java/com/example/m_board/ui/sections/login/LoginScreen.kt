@@ -9,6 +9,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,6 +20,7 @@ import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import com.example.m_board.util.CustomSharedValues.setSizeLimitation
+import com.example.m_board.util.ScreenState
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import kotlinx.coroutines.launch
 
@@ -25,8 +28,23 @@ object LoginScreen {
     @Composable
     fun Screen(
         modifier: Modifier,
-        loginViewModel: LoginViewModel
+        loginViewModel: LoginViewModel,
+        toHomeScreen: () -> Unit
     ) {
+        val screenState = loginViewModel.screenState.collectAsState()
+        val context = LocalContext.current
+        LaunchedEffect(
+            key1 = screenState.value,
+            block = {
+                val ss = screenState.value
+                when (ss) {
+                    is ScreenState.PreCall, is ScreenState.Loading -> {}
+                    is ScreenState.Loaded -> toHomeScreen()
+                    is ScreenState.ApiError -> ss.manageToastActions(context = context)
+                }
+            }
+        )
+
         Scaffold(
             modifier = modifier,
             content = {
