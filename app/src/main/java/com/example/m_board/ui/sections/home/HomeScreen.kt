@@ -1,5 +1,6 @@
 package com.example.m_board.ui.sections.home
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -62,12 +63,13 @@ object HomeScreen {
                     ),
                     verticalAlignment = Alignment.CenterVertically,
                     content = {
+                        val activity = LocalActivity.current
                         Box(
                             modifier = Modifier
                                 .setSizeLimitation()
                                 .clip(shape = CircleShape)
                                 .background(color = MaterialTheme.colorScheme.primaryContainer)
-                                .clickable(onClick = { TODO() }),
+                                .clickable(onClick = { activity?.finishAffinity() ?: TODO() }),
                             contentAlignment = Alignment.Center,
                             content = {
                                 Icon(
