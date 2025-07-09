@@ -28,6 +28,9 @@ class HomeViewModel : ViewModel() {
 
     val message: MutableStateFlow<String> = MutableStateFlow("")
 
+    private val _hasLoadedOnce: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val hasLoadedOnce: StateFlow<Boolean> get() = _hasLoadedOnce
+
     private val _messageList: MutableStateFlow<List<Message>> = MutableStateFlow(listOf())
     val messageList: StateFlow<List<Message>> get() = _messageList
 
@@ -74,6 +77,7 @@ class HomeViewModel : ViewModel() {
             .addValueEventListener(
                 object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
+                        _hasLoadedOnce.value = true
                         _messageList.value = snapshot.children
                             .mapNotNull { child -> child.getValue(Message::class.java) }
                             .sortedByDescending { it.time }

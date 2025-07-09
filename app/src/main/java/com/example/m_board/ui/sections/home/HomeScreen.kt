@@ -40,6 +40,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.m_board.util.CustomSharedValues
 import com.example.m_board.util.CustomSharedValues.setSizeLimitation
 import com.example.m_board.util.ScreenState
 import com.google.firebase.auth.FirebaseAuth
@@ -114,84 +115,100 @@ object HomeScreen {
                             block = { listState.animateScrollToItem(0) }
                         )
 
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(weight = 1f),
-                            state = listState,
-                            reverseLayout = true,
-                            verticalArrangement = Arrangement.spacedBy(
-                                space = 4.dp,
-                                alignment = Alignment.Bottom
-                            ),
-                            content = {
-                                items(
-                                    items = list,
-                                    itemContent = {
-                                        val isUsersText =
-                                            ((it.userId == userId) && (userId != null))
-                                        Box(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            contentAlignment = if (isUsersText) Alignment.CenterEnd else Alignment.CenterStart,
-                                            content = {
-                                                Column(
-                                                    modifier = Modifier
-                                                        .widthIn(min = 250.dp)
-                                                        .padding(
-                                                            start = if (isUsersText) 64.dp else 16.dp,
-                                                            end = if (isUsersText) 16.dp else 64.dp
-                                                        )
-                                                        .background(
-                                                            color =
-                                                                if (isUsersText) MaterialTheme.colorScheme.primaryContainer
-                                                                else MaterialTheme.colorScheme.surfaceContainer,
-                                                            shape = RoundedCornerShape(size = 16.dp)
-                                                        )
-                                                        .padding(
-                                                            start = 16.dp,
-                                                            end = 16.dp,
-                                                            top = 12.dp,
-                                                            bottom = 8.dp
-                                                        ),
-                                                    content = {
-                                                        val textColor =
-                                                            if (isUsersText) MaterialTheme.colorScheme.onPrimaryContainer
-                                                            else MaterialTheme.colorScheme.onSurface
-                                                        if (!isUsersText) {
+                        if (homeViewModel.hasLoadedOnce.collectAsState().value) {
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(weight = 1f),
+                                state = listState,
+                                reverseLayout = true,
+                                verticalArrangement = Arrangement.spacedBy(
+                                    space = 4.dp,
+                                    alignment = Alignment.Bottom
+                                ),
+                                content = {
+                                    items(
+                                        items = list,
+                                        itemContent = {
+                                            val isUsersText =
+                                                ((it.userId == userId) && (userId != null))
+                                            Box(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                contentAlignment = if (isUsersText) Alignment.CenterEnd else Alignment.CenterStart,
+                                                content = {
+                                                    Column(
+                                                        modifier = Modifier
+                                                            .widthIn(min = 250.dp)
+                                                            .padding(
+                                                                start = if (isUsersText) 64.dp else 16.dp,
+                                                                end = if (isUsersText) 16.dp else 64.dp
+                                                            )
+                                                            .background(
+                                                                color =
+                                                                    if (isUsersText) MaterialTheme.colorScheme.primaryContainer
+                                                                    else MaterialTheme.colorScheme.surfaceContainer,
+                                                                shape = RoundedCornerShape(size = 16.dp)
+                                                            )
+                                                            .padding(
+                                                                start = 16.dp,
+                                                                end = 16.dp,
+                                                                top = 12.dp,
+                                                                bottom = 8.dp
+                                                            ),
+                                                        content = {
+                                                            val textColor =
+                                                                if (isUsersText) MaterialTheme.colorScheme.onPrimaryContainer
+                                                                else MaterialTheme.colorScheme.onSurface
+                                                            if (!isUsersText) {
+                                                                Text(
+                                                                    modifier = Modifier.align(
+                                                                        alignment = Alignment.Start
+                                                                    ),
+                                                                    text = it.userName
+                                                                        ?: "[Unnamed User]",
+                                                                    fontWeight = FontWeight.SemiBold,
+                                                                    fontSize = 12.sp,
+                                                                    lineHeight = 12.sp,
+                                                                    color = textColor
+                                                                )
+                                                            }
                                                             Text(
-                                                                modifier = Modifier.align(alignment = Alignment.Start),
-                                                                text = it.userName
-                                                                    ?: "[Unnamed User]",
-                                                                fontWeight = FontWeight.SemiBold,
+                                                                text = it.message,
+                                                                fontWeight = FontWeight.Medium,
+                                                                fontSize = 18.sp,
+                                                                lineHeight = 18.sp,
+                                                                color = textColor
+                                                            )
+                                                            Text(
+                                                                modifier = Modifier.align(alignment = Alignment.End),
+                                                                text = it.time.toHourMinute(),
+                                                                fontWeight = FontWeight.Medium,
                                                                 fontSize = 12.sp,
                                                                 lineHeight = 12.sp,
                                                                 color = textColor
                                                             )
                                                         }
-                                                        Text(
-                                                            text = it.message,
-                                                            fontWeight = FontWeight.Medium,
-                                                            fontSize = 18.sp,
-                                                            lineHeight = 18.sp,
-                                                            color = textColor
-                                                        )
-                                                        Text(
-                                                            modifier = Modifier.align(alignment = Alignment.End),
-                                                            text = it.time.toHourMinute(),
-                                                            fontWeight = FontWeight.Medium,
-                                                            fontSize = 12.sp,
-                                                            lineHeight = 12.sp,
-                                                            color = textColor
-                                                        )
-                                                    }
-                                                )
-                                            }
-                                        )
-                                    }
-                                )
-                            }
-                        )
-
+                                                    )
+                                                }
+                                            )
+                                        }
+                                    )
+                                }
+                            )
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(weight = 1f),
+                                contentAlignment = Alignment.Center,
+                                content = {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(size = CustomSharedValues.minimumTouchSize),
+                                        strokeWidth = 3.dp
+                                    )
+                                }
+                            )
+                        }
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
