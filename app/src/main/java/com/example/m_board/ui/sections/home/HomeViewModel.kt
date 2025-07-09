@@ -16,12 +16,13 @@ import kotlinx.coroutines.tasks.await
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.random.Random
 
 class HomeViewModel : ViewModel() {
     private val TAG = this::class.simpleName
 
     companion object {
-        const val BOARD_REFERENCE = "BOARD"
+        const val BOARD_PATH = "BOARD"
     }
 
     val message: MutableStateFlow<String> = MutableStateFlow("")
@@ -37,18 +38,20 @@ class HomeViewModel : ViewModel() {
         _screenState.value = ScreenState.Loading()
         viewModelScope.launch {
             try {
-                Log.d(TAG,"api call starting")
+                Log.d(TAG, "api call starting")
+
+                val msg = Message(
+                    time = System.currentTimeMillis(),
+                    message = message,
+                    userName = null
+                )
                 Firebase
                     .database
-                    .getReference(BOARD_REFERENCE)
-                    .push()
-                    .setValue(
-                        Message(
-                            time = System.currentTimeMillis(),
-                            message = message,
-                            userName = null
-                        )
-                    ).await()
+                    .reference
+                    .child(BOARD_PATH)
+                    .child(Random.nextInt().toString())
+                    .setValue(msg.toMap())
+                    .await()
                 ScreenState.Loaded(result = Unit)
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -63,7 +66,7 @@ class HomeViewModel : ViewModel() {
 
     fun liveListener() {
         Firebase.database
-            .getReference(BOARD_REFERENCE)
+            .getReference(BOARD_PATH)
             .orderByChild(Message::time.name)
             .addValueEventListener(
                 object : ValueEventListener {
@@ -81,14 +84,23 @@ class HomeViewModel : ViewModel() {
     }
 }
 
+// TODO: verify default values
 data class Message(
-    val time: Long,
-    val message: String,
-    val userName: String?
-)
+    val time: Long = 0,
+    val message: String = "",
+    val userName: String? = null
+) {
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            this::time.name to this.time,
+            this::message.name to this.message,
+            this::userName.name to this.userName
+        )
+    }
+}
 
 fun Long.toHourMinute(): String {
     return Instant.ofEpochMilli(this)
         .atZone(ZoneId.systemDefault())
-        .format(DateTimeFormatter.ofPattern("hh:mm"))
+        .format(DateTimeFormatter.ofPattern("hh:mm a"))
 }
