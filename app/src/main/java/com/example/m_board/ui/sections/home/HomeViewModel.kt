@@ -40,6 +40,7 @@ class HomeViewModel : ViewModel() {
         MutableStateFlow(ScreenState.PreCall())
     val screenState: StateFlow<ScreenState<Unit>> get() = _screenState
 
+    /** no caching added because firebase already has that built in */
     fun sendMessage(message: String) {
         _screenState.value = ScreenState.Loading()
         viewModelScope.launch {
@@ -78,23 +79,31 @@ class HomeViewModel : ViewModel() {
         liveListener()
     }
 
+    val valueEventListener = object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            _hasLoadedOnce.value = true
+            _messageList.value = snapshot.children
+                .mapNotNull { child -> child.getValue(Message::class.java) }
+                .sortedByDescending { it.time }
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            error.toException().printStackTrace()
+        }
+    }
+
     fun liveListener() {
         Firebase.database
             .getReference(BOARD_PATH)
-            .addValueEventListener(
-                object : ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        _hasLoadedOnce.value = true
-                        _messageList.value = snapshot.children
-                            .mapNotNull { child -> child.getValue(Message::class.java) }
-                            .sortedByDescending { it.time }
-                    }
+            .addValueEventListener(valueEventListener)
+    }
 
-                    override fun onCancelled(error: DatabaseError) {
-                        error.toException().printStackTrace()
-                    }
-                }
-            )
+    override fun onCleared() {
+        super.onCleared()
+
+        Firebase.database
+            .getReference(BOARD_PATH)
+            .removeEventListener(valueEventListener)
     }
 }
 
