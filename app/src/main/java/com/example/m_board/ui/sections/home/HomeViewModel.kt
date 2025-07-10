@@ -78,10 +78,10 @@ class HomeViewModel : ViewModel() {
 
     val valueEventListener = object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
-            _hasLoadedOnce.value = ScreenState.Loaded(result = Unit)
             _messageList.value = snapshot.children
                 .mapNotNull { child -> child.getValue(Message::class.java) }
                 .sortedByDescending { it.time }
+            _hasLoadedOnce.value = ScreenState.Loaded(result = Unit)
         }
 
         override fun onCancelled(error: DatabaseError) {
