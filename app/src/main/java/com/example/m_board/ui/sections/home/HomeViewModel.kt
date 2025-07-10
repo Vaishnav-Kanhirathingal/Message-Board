@@ -86,7 +86,7 @@ class HomeViewModel : ViewModel() {
 
         override fun onCancelled(error: DatabaseError) {
             error.toException().printStackTrace()
-            _screenState.value = ScreenState.ApiError.fromException(error.toException())
+            _hasLoadedOnce.value = ScreenState.ApiError.fromException(error.toException())
         }
     }
 
