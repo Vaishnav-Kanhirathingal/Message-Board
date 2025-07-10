@@ -14,10 +14,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withTimeout
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.seconds
 
 class HomeViewModel : ViewModel() {
     private val TAG = this::class.simpleName
@@ -51,13 +53,18 @@ class HomeViewModel : ViewModel() {
                     userName = user?.displayName,
                     userId = user?.uid
                 )
-                Firebase
-                    .database
-                    .reference
-                    .child(BOARD_PATH)
-                    .child(Random.nextInt().toString())
-                    .setValue(msg.toMap())
-                    .await()
+                withTimeout(
+                    timeout = 5.seconds,
+                    block = {
+                        Firebase
+                            .database
+                            .reference
+                            .child(BOARD_PATH)
+                            .child(Random.nextInt().toString())
+                            .setValue(msg.toMap())
+                            .await()
+                    }
+                )
                 this@HomeViewModel.message.value = ""
                 ScreenState.Loaded(result = Unit)
             } catch (e: Exception) {

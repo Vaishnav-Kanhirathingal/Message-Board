@@ -3,6 +3,7 @@ package com.example.m_board.util
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import kotlinx.coroutines.TimeoutCancellationException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
@@ -17,7 +18,7 @@ sealed class ScreenState<T> {
         companion object {
             fun <T> fromException(e: Exception): ApiError<T> {
                 return when (e) {
-                    is SocketTimeoutException, is UnknownHostException -> NetworkError()
+                    is SocketTimeoutException, is UnknownHostException, is TimeoutCancellationException -> NetworkError()
                     else -> SomethingWentWrong()
                 }
             }
