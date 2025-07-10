@@ -4,12 +4,13 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.tasks.await
 
 // TODO: test
 class MessagePagingSource : PagingSource<DocumentSnapshot, Message>() {
+    private val TAG = this::class.simpleName
+
     companion object {
         const val PAGE_SIZE = 10
     }
@@ -19,15 +20,19 @@ class MessagePagingSource : PagingSource<DocumentSnapshot, Message>() {
             val key = params.key
             val currentQuery = Firebase.firestore
                 .collection(HomeViewModel.BOARD_PATH)
-                .orderBy("timestamp", Query.Direction.DESCENDING)
+//                .orderBy("timestamp", Query.Direction.DESCENDING)
                 .let {
                     if (key == null) it
                     else it.startAfter(key)
                 }
                 .limit(PAGE_SIZE.toLong()).get().await()
 
+            val data = currentQuery.documents.mapNotNull { it.toObject(Message::class.java) }
+
+//            Log.d(TAG,"data = ${GsonBuilder().setPrettyPrinting().create().toJson(currentQuery.documents)}")
+
             return LoadResult.Page(
-                data = currentQuery.documents.mapNotNull { it.toObject(Message::class.java) },
+                data = data,
                 prevKey = null,
                 nextKey = currentQuery.documents.lastOrNull()
 

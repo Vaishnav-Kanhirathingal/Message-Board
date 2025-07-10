@@ -80,8 +80,11 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     //------------------------------------------------------------------------------------pagination
     implementation("androidx.paging:paging-runtime:3.3.6")
+    implementation("androidx.paging:paging-compose:3.4.0-alpha01")
 
     // Import the BoM for the Firebase platform
     implementation(platform("com.google.firebase:firebase-bom:33.16.0"))
     implementation("com.google.firebase:firebase-firestore")
+
+    implementation("com.google.code.gson:gson:2.13.1")
 }

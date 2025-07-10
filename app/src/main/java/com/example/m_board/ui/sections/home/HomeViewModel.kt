@@ -3,22 +3,23 @@ package com.example.m_board.ui.sections.home
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.cachedIn
 import com.example.m_board.util.ScreenState
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.ktx.database
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withTimeout
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
 class HomeViewModel : ViewModel() {
@@ -30,12 +31,9 @@ class HomeViewModel : ViewModel() {
 
     val message: MutableStateFlow<String> = MutableStateFlow("")
 
-    private val _hasLoadedOnce: MutableStateFlow<ScreenState<Unit>> =
+    private val _refreshCounter: MutableStateFlow<ScreenState<Int>> =
         MutableStateFlow(ScreenState.PreCall())
-    val hasLoadedOnce: StateFlow<ScreenState<Unit>> get() = _hasLoadedOnce
-
-    private val _messageList: MutableStateFlow<List<Message>> = MutableStateFlow(listOf())
-    val messageList: StateFlow<List<Message>> get() = _messageList
+    val refreshCounter: StateFlow<ScreenState<Int>> get() = _refreshCounter
 
     private val _screenState: MutableStateFlow<ScreenState<Unit>> =
         MutableStateFlow(ScreenState.PreCall())
@@ -58,12 +56,9 @@ class HomeViewModel : ViewModel() {
                 withTimeout(
                     timeout = 5.seconds,
                     block = {
-                        Firebase
-                            .database
-                            .reference
-                            .child(BOARD_PATH)
-                            .child(Random.nextInt().toString())
-                            .setValue(msg.toMap())
+                        Firebase.firestore
+                            .collection(BOARD_PATH)
+                            .add(msg.toMap())
                             .await()
                     }
                 )
@@ -76,40 +71,42 @@ class HomeViewModel : ViewModel() {
         }
     }
 
-    val valueEventListener = object : ValueEventListener {
-        override fun onDataChange(snapshot: DataSnapshot) {
-            _messageList.value = snapshot.children
-                .mapNotNull { child -> child.getValue(Message::class.java) }
-                .sortedByDescending { it.time }
-            _hasLoadedOnce.value = ScreenState.Loaded(result = Unit)
-        }
-
-        override fun onCancelled(error: DatabaseError) {
-            error.toException().printStackTrace()
-            _hasLoadedOnce.value = ScreenState.ApiError.fromException(error.toException())
-        }
-    }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val pager = refreshCounter.flatMapLatest {
+        Pager(
+            config = PagingConfig(pageSize = MessagePagingSource.PAGE_SIZE),
+            pagingSourceFactory = { MessagePagingSource() }
+        ).flow
+    }.cachedIn(scope = viewModelScope)
 
     init {
         addBoardListener()
     }
 
     fun addBoardListener() {
-        Firebase.database.getReference(BOARD_PATH).addValueEventListener(valueEventListener)
+        Firebase.firestore.collection(BOARD_PATH).addSnapshotListener { s, e ->
+            if ((e == null) && (s != null)) {
+                _refreshCounter.value = ScreenState.Loaded(
+                    (_refreshCounter.value as? ScreenState.Loaded)?.result?.plus(1) ?: 0
+                )
+
+            }
+        }
     }
 
     override fun onCleared() {
         super.onCleared()
-        Firebase.database.getReference(BOARD_PATH).removeEventListener(valueEventListener)
+        // TODO: clear listener
+//        Firebase.database.getReference(BOARD_PATH).removeEventListener(valueEventListener)
     }
 }
 
-// TODO: verify default values
 data class Message(
     val time: Long = 0,
     val message: String = "",
     val userName: String? = null,
-    val userId: String? = null
+    val userId: String? = null,
+    val key: String? = null
 ) {
     fun toMap(): Map<String, Any?> { // TODO: remove?
         return mapOf(
