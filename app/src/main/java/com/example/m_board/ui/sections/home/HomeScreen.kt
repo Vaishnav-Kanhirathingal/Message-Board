@@ -117,7 +117,6 @@ object HomeScreen {
                             key1 = refreshCounter,
                             block = {
                                 if (refreshCounter is ScreenState.Loaded) {
-//                                    lazyItems.refresh()
                                     listState.animateScrollToItem(0)
                                 }
                             }

@@ -8,6 +8,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import com.example.m_board.util.ScreenState
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -74,7 +75,10 @@ class HomeViewModel : ViewModel() {
     @OptIn(ExperimentalCoroutinesApi::class)
     val pager = refreshCounter.flatMapLatest {
         Pager(
-            config = PagingConfig(pageSize = MessagePagingSource.PAGE_SIZE),
+            config = PagingConfig(
+                pageSize = MessagePagingSource.PAGE_SIZE,
+                maxSize = 200
+            ),
             pagingSourceFactory = { MessagePagingSource() }
         ).flow
     }.cachedIn(scope = viewModelScope)
@@ -84,14 +88,17 @@ class HomeViewModel : ViewModel() {
     }
 
     fun addBoardListener() {
-        Firebase.firestore.collection(BOARD_PATH).addSnapshotListener { s, e ->
-            if ((e == null) && (s != null)) {
-                _refreshCounter.value = ScreenState.Loaded(
-                    (_refreshCounter.value as? ScreenState.Loaded)?.result?.plus(1) ?: 0
-                )
-
+        Firebase.firestore
+            .collection(BOARD_PATH)
+            .orderBy(Message::time.name,Query.Direction.DESCENDING)
+            .limit(MessagePagingSource.PAGE_SIZE.toLong())
+            .addSnapshotListener { s, e ->
+                if ((e == null) && (s != null)) {
+                    _refreshCounter.value = ScreenState.Loaded(
+                        (_refreshCounter.value as? ScreenState.Loaded)?.result?.plus(1) ?: 0
+                    )
+                }
             }
-        }
     }
 
     override fun onCleared() {
