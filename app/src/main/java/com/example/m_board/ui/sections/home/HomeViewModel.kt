@@ -30,8 +30,9 @@ class HomeViewModel : ViewModel() {
 
     val message: MutableStateFlow<String> = MutableStateFlow("")
 
-    private val _hasLoadedOnce: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    val hasLoadedOnce: StateFlow<Boolean> get() = _hasLoadedOnce
+    private val _hasLoadedOnce: MutableStateFlow<ScreenState<Unit>> =
+        MutableStateFlow(ScreenState.PreCall())
+    val hasLoadedOnce: StateFlow<ScreenState<Unit>> get() = _hasLoadedOnce
 
     private val _messageList: MutableStateFlow<List<Message>> = MutableStateFlow(listOf())
     val messageList: StateFlow<List<Message>> get() = _messageList
@@ -75,13 +76,9 @@ class HomeViewModel : ViewModel() {
         }
     }
 
-    init {
-        liveListener()
-    }
-
     val valueEventListener = object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
-            _hasLoadedOnce.value = true
+            _hasLoadedOnce.value = ScreenState.Loaded(result = Unit)
             _messageList.value = snapshot.children
                 .mapNotNull { child -> child.getValue(Message::class.java) }
                 .sortedByDescending { it.time }
@@ -89,21 +86,21 @@ class HomeViewModel : ViewModel() {
 
         override fun onCancelled(error: DatabaseError) {
             error.toException().printStackTrace()
+            _screenState.value = ScreenState.ApiError.fromException(error.toException())
         }
     }
 
-    fun liveListener() {
-        Firebase.database
-            .getReference(BOARD_PATH)
-            .addValueEventListener(valueEventListener)
+    init {
+        addBoardListener()
+    }
+
+    fun addBoardListener() {
+        Firebase.database.getReference(BOARD_PATH).addValueEventListener(valueEventListener)
     }
 
     override fun onCleared() {
         super.onCleared()
-
-        Firebase.database
-            .getReference(BOARD_PATH)
-            .removeEventListener(valueEventListener)
+        Firebase.database.getReference(BOARD_PATH).removeEventListener(valueEventListener)
     }
 }
 
